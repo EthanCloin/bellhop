@@ -1,0 +1,6 @@
+@Bellhop_HostAddress = http://localhost:5037
+
+GET {{Bellhop_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
