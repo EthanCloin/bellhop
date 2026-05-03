@@ -78,7 +78,7 @@ public static class SessionEndpoints
 
             await httpContext.SignOutAsync("SessionAuth");
             return Results.Ok();
-        }).RequireAuthorization();
+        }).RequireAuthorization("SessionAuthPolicy");
 
         group.MapGet("/me", (HttpContext httpContext) =>
         {
@@ -91,6 +91,6 @@ public static class SessionEndpoints
             }
 
             return Results.Ok(new UserResponse(Guid.Parse(userId), username));
-        }).RequireAuthorization();
+        }).RequireAuthorization("SessionAuthPolicy");
     }
 }

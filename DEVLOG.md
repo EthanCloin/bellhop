@@ -31,3 +31,12 @@ Endpoints
 - Session Login: POST /api/v1/auth/session/login
 - Token Login: POST /api/v1/auth/token/login
 - Token Refresh: POST /api/v1/auth/token/refresh
+
+## Next Steps
+
+Reviewing the behavior by hitting the endpoints and checking responses.
+Can I add Swagger or use builtin OpenAPI to make that check easy via a web ui?
+Yes adding Scalar which is latest and greatest version of swaggerui.
+
+Now testing the user register + session login/logout/me endpoints.
+failing on /me.
