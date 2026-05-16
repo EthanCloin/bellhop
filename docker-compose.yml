@@ -10,12 +10,20 @@ services:
       - ConnectionStrings__DefaultConnection=Host=db;Port=5432;Username=postgres;Password=postgres;Database=security
     depends_on:
       - db
+    volumes:
+      - ./src:/src
+    command: dotnet watch run --project Bellhop.csproj --non-interactive
   db:
     image: postgres:16
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_DB=security
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d security"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
     ports:
       - "5432:5432"
     volumes:
