@@ -10,7 +10,7 @@ namespace Bellhop.Features.Auth.Session;
 public static class SessionEndpoints
 {
     public record LoginRequest(string Username, string Password);
-    public record UserResponse(Guid Id, string Username);
+    public record UserResponse(Guid Id, string Username, string? SessionToken = null);
 
     public static void MapSessionEndpoints(this IEndpointRouteBuilder app)
     {
@@ -84,13 +84,14 @@ public static class SessionEndpoints
         {
             var userId = httpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
             var username = httpContext.User.FindFirstValue(ClaimTypes.Name);
+            var sessionToken = httpContext.User.FindFirstValue("SessionToken");
 
             if (userId == null || username == null)
             {
                 return Results.Unauthorized();
             }
 
-            return Results.Ok(new UserResponse(Guid.Parse(userId), username));
+            return Results.Ok(new UserResponse(Guid.Parse(userId), username, sessionToken));
         }).RequireAuthorization("SessionAuthPolicy");
     }
 }

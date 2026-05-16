@@ -4,8 +4,6 @@ using Bellhop.Features.Auth.Token;
 using Bellhop.Features.Users;
 using Bellhop.Infrastructure.Data;
 using Bellhop.Infrastructure.Security;
-using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Scalar.AspNetCore;
@@ -13,9 +11,13 @@ using Scalar.AspNetCore;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+if (builder.Environment.EnvironmentName != "Testing")
+{
+    builder.Services.AddDbContext<AppDbContext>(options =>
+        options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+}
 
+builder.Services.AddScoped<IDbInitializer, PostgresDbInitializer>();
 builder.Services.AddSingleton<IPasswordHasher, PasswordHasher>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 
@@ -56,7 +58,7 @@ builder.Services.AddAuthorization(options =>
         policy.AuthenticationSchemes.Add("TokenAuth");
         policy.RequireAuthenticatedUser();
     });
-    
+
     options.AddPolicy("SessionAuthPolicy", policy =>
     {
         policy.AuthenticationSchemes.Add("SessionAuth");
@@ -68,11 +70,11 @@ builder.Services.AddOpenApi();
 
 var app = builder.Build();
 
-// Migrate database
+// Initialize database
 using (var scope = app.Services.CreateScope())
 {
-    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    db.Database.Migrate();
+    var initializer = scope.ServiceProvider.GetRequiredService<IDbInitializer>();
+    await initializer.InitializeAsync();
 }
 
 // Configure the HTTP request pipeline.
@@ -81,38 +83,18 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
     app.MapScalarApiReference();
 }
-
-app.UseHttpsRedirection();
+else
+{
+    app.UseHttpsRedirection();
+}
 
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapRegisterEndpoint();
+app.MapGetUsersEndpoint();
 app.MapSessionEndpoints();
 app.MapTokenEndpoints();
-
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
-
-app.MapGet("/weatherforecast", () =>
-{
-    var forecast =  Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-})
-.WithName("GetWeatherForecast");
-
 app.Run();
 
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
+public partial class Program { }

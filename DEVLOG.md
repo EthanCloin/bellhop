@@ -40,3 +40,27 @@ Yes adding Scalar which is latest and greatest version of swaggerui.
 
 Now testing the user register + session login/logout/me endpoints.
 failing on /me.
+
+# Add test project
+
+Summary of Changes:
+
+1.  Test Project: Created tests/Bellhop.IntegrationTests with xUnit.
+2.  Infrastructure:
+    - Added BellhopWebApplicationFactory which automatically swaps PostgreSQL for
+      a SQLite In-Memory database during tests.
+    - Updated Program.cs to support this swap and to use Database.EnsureCreated()
+      when running in the Testing environment.
+3.  Test Coverage: Implemented a comprehensive flow in SessionAuthTests.cs that
+    verifies:
+    - User Registration: Creating a new user via /api/v1/users/register.
+    - Login: Authenticating and establishing a server-side session via
+      /api/v1/auth/session/login.
+    - Identity: Verifying the current user state via /api/v1/auth/session/me.
+    - Logout: Terminating the session and revoking the token via
+      /api/v1/auth/session/logout.
+
+How to run your tests:
+You can run the tests anytime from your terminal:
+
+1 dotnet test tests/Bellhop.IntegrationTests/Bellhop.IntegrationTests.csproj
