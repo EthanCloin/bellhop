@@ -9,10 +9,8 @@ services:
       - ASPNETCORE_ENVIRONMENT=Development
       - ConnectionStrings__DefaultConnection=Host=db;Port=5432;Username=postgres;Password=postgres;Database=security
     depends_on:
-      - db
-    volumes:
-      - ./src:/src
-    command: dotnet watch run --project Bellhop.csproj --non-interactive
+      db:
+        condition: service_healthy
   db:
     image: postgres:16
     environment:
